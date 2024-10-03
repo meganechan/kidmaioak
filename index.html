@@ -6,6 +6,31 @@
     <title>...</title>
 </head>
 <body>    
-    <img src="./hen.png" alt="Placeholder image">
+    <img src="./hen.png" alt="hen will be back">
+
+    <audio id="myAudio" controls autoplay>
+        <source src="hen.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var audio = document.getElementById('myAudio');
+            
+            // Attempt to play audio
+            var playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Auto-play started successfully
+                    console.log('Auto-play started');
+                }).catch(error => {
+                    // Auto-play was prevented
+                    console.log('Auto-play was prevented');
+                    // You might want to show a play button here
+                });
+            }
+        });
+    </script>
 </body>
 </html>
