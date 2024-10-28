@@ -5,32 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>...</title>
 </head>
-<body>    
-    <img src="./hen.png" alt="hen will be back">
+<body onclick="">    
+    <h2> จันเรด was here</h2>
+    <img src="./channels4_profile.jpg" alt="">
 
-    <audio id="myAudio" controls autoplay>
+    <audio id="myAudio" controls autoplay style="display:none">
         <source src="hen.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var audio = document.getElementById('myAudio');
-            
-            // Attempt to play audio
-            var playPromise = audio.play();
-
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Auto-play started successfully
-                    console.log('Auto-play started');
-                }).catch(error => {
-                    // Auto-play was prevented
-                    console.log('Auto-play was prevented');
-                    // You might want to show a play button here
-                });
-            }
-        });
+        function playAudio(url) {
+          new Audio("hen.mp3").play();
+        }
     </script>
 </body>
 </html>
