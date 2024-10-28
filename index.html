@@ -1,23 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>...</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    
+    .game-container {
+      text-align: center;
+    }
+    
+    .character {
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s;
+    }
+    
+    .character:active {
+      transform: scale(0.95);
+    }
+    
+    .score {
+      font-size: 24px;
+      margin: 20px;
+      color: #333;
+    }
+    
+    .clicks-per-second {
+      font-size: 18px;
+      color: #666;
+    }
+
+    .sound-toggle {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .sound-toggle:hover {
+      background: #45a049;
+    }
+
+    .sound-input {
+      margin-top: 20px;
+      width: 200px;
+    }
+  </style>
 </head>
-<body onclick="playSound()">
-    <h2> จันเรด was here</h2>
-    <img src="./channels4_profile.jpg" alt="">
+<body>
+  <div class="game-container">
+    <div class="score">Score: <span id="score">0</span></div>
+    <div class="clicks-per-second">CPS: <span id="cps">0.0</span></div>
+    <img 
+      id="character" 
+      class="character" 
+      src="channels4_profile.jpg" 
+      alt="Click me!"
+      style="width:200px;"
+    >
+    <input type="file" accept="audio/*" id="audioInput" class="sound-input">
+    <button class="sound-toggle" id="soundToggle">🔊 Sound On</button>
+  </div>
 
-    <audio id="myAudio" controls autoplay style="display:none">
-        <source src="hen.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+  <script>
+    let score = 0;
+    let clicks = [];
+    let soundEnabled = true;
+    let audio = null;
+    const character = document.getElementById('character');
+    const scoreElement = document.getElementById('score');
+    const cpsElement = document.getElementById('cps');
+    const soundToggle = document.getElementById('soundToggle');
+    const audioInput = document.getElementById('audioInput');
+    
+    // Handle audio file input
+    audioInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        audio = new Audio();
+        audio.src = url;
+      }
+    });
+    
+    // Toggle sound
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? '🔊 Sound On' : '🔈 Sound Off';
+    });
+    
+    const closedMouthSVG = `
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="#FFB6C1"/>
+        <circle cx="70" cy="80" r="10" fill="black"/>
+        <circle cx="130" cy="80" r="10" fill="black"/>
+        <path d="M 60 120 Q 100 140 140 120" stroke="black" stroke-width="4" fill="none"/>
+      </svg>
+    `;
+    
+    const openMouthSVG = `
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="#FFB6C1"/>
+        <circle cx="70" cy="80" r="10" fill="black"/>
+        <circle cx="130" cy="80" r="10" fill="black"/>
+        <circle cx="100" cy="130" r="30" fill="black"/>
+      </svg>
+    `;
 
-    <script>
-        function playAudio(url) {
-          new Audio("hen.mp3").play();
-        }
-    </script>
+    character.outerHTML = closedMouthSVG;
+    const characterSVG = document.querySelector('svg');
+    characterSVG.classList.add('character');
+    
+    function updateCPS() {
+      const now = Date.now();
+      clicks = clicks.filter(click => now - click < 1000);
+      const cps = clicks.length;
+      cpsElement.textContent = cps.toFixed(1);
+    }
+
+    function playSound() {
+      if (audio && soundEnabled) {
+        // Clone the audio to allow rapid clicking
+        const soundClone = audio.cloneNode();
+        soundClone.play();
+      }
+    }
+    
+    function handleClick() {
+      score++;
+      scoreElement.textContent = score;
+      
+      playSound();
+      
+      clicks.push(Date.now());
+      updateCPS();
+      
+      // Switch to open mouth
+      characterSVG.outerHTML = openMouthSVG;
+      const newCharacter = document.querySelector('svg');
+      newCharacter.classList.add('character');
+      
+      // Switch back to closed mouth after 100ms
+      setTimeout(() => {
+        newCharacter.outerHTML = closedMouthSVG;
+        const closedCharacter = document.querySelector('svg');
+        closedCharacter.classList.add('character');
+        closedCharacter.addEventListener('click', handleClick);
+      }, 100);
+      
+      // Add click event listener to new SVG
+      newCharacter.addEventListener('click', handleClick);
+    }
+    
+    characterSVG.addEventListener('click', handleClick);
+    
+    // Update CPS counter every 100ms
+    setInterval(updateCPS, 100);
+  </script>
 </body>
 </html>
