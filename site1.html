@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross-Domain User Tracking</title>
+    <title>GA4 Properties</title>
     
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1P2R2M5MS3"></script>
     <script>
+        // Store GA ID for easy reference
+        const GA_MEASUREMENT_ID = 'G-1P2R2M5MS3';
+
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        // Initialize GA4 with cross-domain tracking
-        gtag('config', 'G-1P2R2M5MS3', {
+        gtag('config', GA_MEASUREMENT_ID, {
             'cookie_domain': 'auto',
             'linker': {
                 'domains': ['kidmaioak.com', 'orca-app-5ape4.ondigitalocean.app'],
@@ -21,96 +23,71 @@
             }
         });
 
-        // Function to set shared user information
-        function setSharedUserInfo(userId, displayName) {
-            // Store both values in localStorage
-            const userInfo = {
-                userId: userId,
-                displayName: displayName,
-                timestamp: new Date().toISOString()
-            };
-            localStorage.setItem('shared_user_info', JSON.stringify(userInfo));
+        // Get GA Client ID
+        function getGAClientId() {
+            gtag('get', GA_MEASUREMENT_ID, 'client_id', (clientId) => {
+                console.log('Client ID:', clientId);
+                document.getElementById('clientId').textContent = clientId || 'Not found';
+            });
+        }
 
-            // Configure GA4 with the user ID
-            gtag('config', 'G-1P2R2M5MS3', {
-                'user_id': userId,
-                'cookie_domain': 'auto',
-                'linker': {
-                    'domains': ['kidmaioak.com', 'orca-app-5ape4.ondigitalocean.app'],
-                    'accept_incoming': true
+        // Get GA User Properties
+        function getUserProperties() {
+            gtag('get', GA_MEASUREMENT_ID, 'user_properties', (properties) => {
+                console.log('User properties:', properties);
+                if (properties && properties.display_name) {
+                    document.getElementById('displayName').textContent = properties.display_name.value;
                 }
             });
-
-            // Send custom event with user info
-            gtag('event', 'user_info_set', {
-                'user_id': userId,
-                'display_name': displayName
-            });
-
-            // Update display
-            updateDisplay(userInfo);
         }
 
-        // Function to get shared user information
-        function getSharedUserInfo() {
-            const storedInfo = localStorage.getItem('shared_user_info');
-            return storedInfo ? JSON.parse(storedInfo) : null;
-        }
-
-        // Function to update display
-        function updateDisplay(userInfo) {
-            if (userInfo) {
-                document.getElementById('currentUserId').textContent = userInfo.userId;
-                document.getElementById('currentDisplayName').textContent = userInfo.displayName;
-                document.getElementById('lastUpdated').textContent = new Date(userInfo.timestamp).toLocaleString();
-            }
-        }
-
-        // Function to handle form submission
-        function handleSubmit() {
+        // Set User Information
+        function setUserInfo() {
+            const nameInput = document.getElementById('nameInput').value;
             const userId = document.getElementById('userIdInput').value;
-            const displayName = document.getElementById('displayNameInput').value;
             
-            if (!userId || !displayName) {
+            if (!nameInput || !userId) {
                 alert('Please enter both User ID and Display Name');
                 return;
             }
-            
-            setSharedUserInfo(userId, displayName);
-            
-            // Clear inputs after setting
+
+            // Set user ID
+            gtag('config', GA_MEASUREMENT_ID, {
+                'user_id': userId
+            });
+
+            // Set user properties
+            gtag('set', 'user_properties', {
+                'display_name': nameInput
+            });
+
+            // Send event
+            gtag('event', 'user_info_set', {
+                'user_id': userId,
+                'display_name': nameInput
+            });
+
+            // Clear inputs
+            document.getElementById('nameInput').value = '';
             document.getElementById('userIdInput').value = '';
-            document.getElementById('displayNameInput').value = '';
-        }
-
-        // Function to clear user info
-        function clearUserInfo() {
-            localStorage.removeItem('shared_user_info');
-            document.getElementById('currentUserId').textContent = 'Not set';
-            document.getElementById('currentDisplayName').textContent = 'Not set';
-            document.getElementById('lastUpdated').textContent = '-';
             
-            // Reset GA4 config
-            gtag('config', 'G-1P2R2M5MS3', {
-                'user_id': undefined
-            });
+            // Get updated info
+            getGAClientId();
+            getUserProperties();
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const storedInfo = getSharedUserInfo();
-            if (storedInfo) {
-                updateDisplay(storedInfo);
-                gtag('config', 'G-1P2R2M5MS3', {
-                    'user_id': storedInfo.userId
-                });
-            }
+        // Get All Information
+        function getAllInfo() {
+            getGAClientId();
+            getUserProperties();
+        }
 
-            // Add event listeners to form
-            document.getElementById('userForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleSubmit();
-            });
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display GA ID
+            document.getElementById('gaId').textContent = GA_MEASUREMENT_ID;
+            // Get initial info
+            getAllInfo();
         });
     </script>
     
@@ -129,10 +106,19 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .form-group {
+        .ga-id {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        .input-group {
             margin-bottom: 15px;
         }
-        label {
+        .input-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
@@ -140,12 +126,15 @@
         input {
             width: 100%;
             padding: 8px;
+            margin-bottom: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
         .button-group {
-            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
         }
         button {
             padding: 10px 20px;
@@ -153,60 +142,68 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            margin-right: 10px;
-        }
-        .submit-btn {
-            background-color: #4CAF50;
+            flex: 1;
             color: white;
         }
-        .clear-btn {
-            background-color: #f44336;
-            color: white;
-        }
+        .set-btn { background-color: #4CAF50; }
+        .get-btn { background-color: #2196F3; }
         .info-box {
             margin-top: 20px;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 4px;
         }
-        .timestamp {
-            font-size: 0.9em;
-            color: #666;
+        .info-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #2196F3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>User Information</h1>
+        <h1>GA4 Properties</h1>
+
+        <div class="ga-id">
+            <strong>GA4 Measurement ID:</strong> 
+            <span id="gaId">Loading...</span>
+        </div>
         
-        <form id="userForm">
-            <div class="form-group">
-                <label for="userIdInput">User ID:</label>
-                <input type="text" id="userIdInput" required>
-            </div>
+        <div class="input-group">
+            <label for="userIdInput">User ID:</label>
+            <input type="text" id="userIdInput" placeholder="Enter User ID">
             
-            <div class="form-group">
-                <label for="displayNameInput">Display Name:</label>
-                <input type="text" id="displayNameInput" required>
-            </div>
-            
-            <div class="button-group">
-                <button type="submit" class="submit-btn">Set User Info</button>
-                <button type="button" class="clear-btn" onclick="clearUserInfo()">Clear</button>
-            </div>
-        </form>
+            <label for="nameInput">Display Name:</label>
+            <input type="text" id="nameInput" placeholder="Enter Display Name">
+        </div>
+
+        <div class="button-group">
+            <button class="set-btn" onclick="setUserInfo()">Set User Info</button>
+            <button class="get-btn" onclick="getAllInfo()">Get Info</button>
+        </div>
 
         <div class="info-box">
             <h2>Current Information</h2>
-            <p><strong>User ID:</strong> <span id="currentUserId">Not set</span></p>
-            <p><strong>Display Name:</strong> <span id="currentDisplayName">Not set</span></p>
-            <p class="timestamp">Last Updated: <span id="lastUpdated">-</span></p>
+            <div class="info-item">
+                <strong>Client ID:</strong> 
+                <span id="clientId">Loading...</span>
+            </div>
+            <div class="info-item">
+                <strong>Display Name:</strong> 
+                <span id="displayName">Not set</span>
+            </div>
         </div>
 
         <div class="info-box">
             <h2>Test Links</h2>
-            <p><a href="https://kidmaioak.com/site1.html">Go to Site 1</a></p>
-            <p><a href="https://orca-app-5ape4.ondigitalocean.app/site3.html">Go to Site 3</a></p>
+            <div class="info-item">
+                <a href="https://kidmaioak.com/site1.html">Go to Site 1</a>
+            </div>
+            <div class="info-item">
+                <a href="https://orca-app-5ape4.ondigitalocean.app/site3.html">Go to Site 3</a>
+            </div>
         </div>
     </div>
 </body>
