@@ -6,14 +6,14 @@
     <title>Cross-Domain User Tracking</title>
     
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6YRJRTXJF0"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KE3K907WVB"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
         // Initialize GA4 with cross-domain tracking
-        gtag('config', 'G-6YRJRTXJF0', {
+        gtag('config', 'G-KE3K907WVB', {
             'cookie_domain': 'auto',
             'linker': {
                 'domains': ['kidmaioak.com', 'orca-app-5ape4.ondigitalocean.app'],
@@ -32,7 +32,7 @@
             localStorage.setItem('shared_user_info', JSON.stringify(userInfo));
 
             // Configure GA4 with the user ID
-            gtag('config', 'G-6YRJRTXJF0', {
+            gtag('config', 'G-KE3K907WVB', {
                 'user_id': userId,
                 'cookie_domain': 'auto',
                 'linker': {
@@ -91,7 +91,7 @@
             document.getElementById('lastUpdated').textContent = '-';
             
             // Reset GA4 config
-            gtag('config', 'G-6YRJRTXJF0', {
+            gtag('config', 'G-KE3K907WVB', {
                 'user_id': undefined
             });
         }
@@ -101,7 +101,7 @@
             const storedInfo = getSharedUserInfo();
             if (storedInfo) {
                 updateDisplay(storedInfo);
-                gtag('config', 'G-6YRJRTXJF0', {
+                gtag('config', 'G-KE3K907WVB', {
                     'user_id': storedInfo.userId
                 });
             }
